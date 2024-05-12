@@ -126,8 +126,6 @@ setInterval(() => {
     const random = Math.random();
     const positionX = [0 - radius, canvas.width + radius][Math.floor(random * 2)];
     const positionY = [0 - radius, canvas.height + radius][Math.floor(random * 2)];
-    console.log(positionX);
-    console.log(positionY);
 
     switch (index) {
         case 0: // x constant
@@ -158,8 +156,19 @@ setInterval(() => {
             radius,
         })
     )
-    console.log(asteroids);
 }, 1000)
+
+function circleCollission(circle1, circle2) {
+    const xDifference = circle2.position.x - circle1.position.x;
+    const yDifference = circle2.position.y - circle1.position.y;
+    const distance = Math.sqrt(xDifference * xDifference + yDifference * yDifference);
+
+    if (distance <= circle1.radius + circle2.radius) {
+        console.log('Collission detected');
+        return true;
+    }
+    return false;
+}
 
 function animate() {
     window.requestAnimationFrame(animate);
@@ -195,6 +204,20 @@ function animate() {
             asteroid.position.y - asteroid.radius > canvas.height) {
             asteroids.splice(i, 1);
         }
+        
+        // Projectile-Asteroid Collision
+        for (let j = projectiles.length - 1; j >= 0; j--) {
+            const projectile = projectiles[j];
+            if (circleCollission(asteroid, projectile)) {
+                if (asteroid.radius > 30) {
+                    asteroid.radius -= 20;
+                    projectiles.splice(j, 1);
+                } else {
+                    asteroids.splice(i, 1);
+                    projectiles.splice(j, 1);
+                }
+            }
+        }
     }
 
     player.velocity.x = keys.w.pressed ? Math.cos(player.rotation) * SPEED : player.velocity.x * FRICTION;
@@ -221,7 +244,7 @@ window.addEventListener('keydown', (e) => {
             keys.d.pressed = true;
             break;
         case 'Space':
-            console.log(Math.sin(player.rotation));
+            e.preventDefault();
             projectiles.push(new Projectile({
                 position: {
                     x: player.position.x + Math.cos(player.rotation) * 30,
