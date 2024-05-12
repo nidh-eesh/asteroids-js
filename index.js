@@ -21,7 +21,7 @@ class Player {
         ctx.translate(this.position.x, this.position.y);
         ctx.rotate(this.rotation);
         ctx.translate(-this.position.x, -this.position.y);
-        
+
         ctx.arc(this.position.x, this.position.y, 5, 0, Math.PI * 2, false)
         ctx.fillStyle = 'red';
         ctx.fill();
@@ -65,6 +65,10 @@ const keys = {
     },
 };
 
+const SPEED = 3;
+const ROTATIONAL_SPEED = 0.05;
+const FRICTION = 0.97;
+
 function animate() {
     window.requestAnimationFrame(animate);
 
@@ -73,10 +77,10 @@ function animate() {
 
     player.update();
 
-    player.velocity.x = keys.w.pressed ? 1 : 0;
-    player.velocity.y = keys.s.pressed ? 1 : 0;
-    player.rotation += keys.d.pressed ? 0.01 : 0;
-    player.rotation -= keys.a.pressed ? 0.01 : 0;
+    player.velocity.x = keys.w.pressed ? Math.cos(player.rotation) * SPEED : player.velocity.x * FRICTION;
+    player.velocity.y = keys.w.pressed ? Math.sin(player.rotation) * SPEED : player.velocity.y * FRICTION;
+    player.rotation += keys.d.pressed ? ROTATIONAL_SPEED : 0;
+    player.rotation -= keys.a.pressed ? ROTATIONAL_SPEED : 0;
 
 }
 
