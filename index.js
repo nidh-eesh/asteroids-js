@@ -44,11 +44,33 @@ class Player {
     }
 }
 
+class Projectile {
+    constructor({ position, velocity }) {
+        this.position = position;
+        this.velocity = velocity;
+        this.radius = 5
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2, false);
+        ctx.closePath();
+        ctx.fillStyle = 'white';
+        ctx.fill();
+    }
+
+    update() {
+        this.draw();
+        this.position.x += this.velocity.x;
+        this.position.y += this.velocity.y;
+    }
+}
+
+
 const player = new Player({
     position: { x: canvas.width / 2, y: canvas.height / 2 },
     velocity: { x: 0, y: 0 }
 })
-player.draw();
 
 const keys = {
     w: {
@@ -65,9 +87,12 @@ const keys = {
     },
 };
 
-const SPEED = 3;
+const SPEED = 2.5;
 const ROTATIONAL_SPEED = 0.05;
 const FRICTION = 0.97;
+const PROJECTILE_SPEED = 3;
+
+const projectiles = [];
 
 function animate() {
     window.requestAnimationFrame(animate);
@@ -76,6 +101,12 @@ function animate() {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     player.update();
+
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+        const projectile = projectiles[i];
+        projectile.update();
+
+    }
 
     player.velocity.x = keys.w.pressed ? Math.cos(player.rotation) * SPEED : player.velocity.x * FRICTION;
     player.velocity.y = keys.w.pressed ? Math.sin(player.rotation) * SPEED : player.velocity.y * FRICTION;
@@ -100,7 +131,19 @@ window.addEventListener('keydown', (e) => {
         case 'KeyD':
             keys.d.pressed = true;
             break;
-
+        case 'Space':
+            console.log(Math.sin(player.rotation));
+            projectiles.push(new Projectile({
+                position: {
+                    x: player.position.x + Math.cos(player.rotation) * 30,
+                    y: player.position.y + Math.sin(player.rotation) * 30,
+                },
+                velocity: {
+                    x: Math.cos(player.rotation) * PROJECTILE_SPEED,
+                    y: Math.sin(player.rotation) * PROJECTILE_SPEED
+                },
+            }))
+            break;
         default:
             break;
     }
