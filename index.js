@@ -164,7 +164,6 @@ function circleCollission(circle1, circle2) {
     const distance = Math.sqrt(xDifference * xDifference + yDifference * yDifference);
 
     if (distance <= circle1.radius + circle2.radius) {
-        console.log('Collission detected');
         return true;
     }
     return false;
@@ -215,6 +214,21 @@ function animate() {
                 } else {
                     asteroids.splice(i, 1);
                     projectiles.splice(j, 1);
+                }
+            }
+        }
+
+        // Asteroid-Asteroid Collision
+        for (let k = asteroids.length - 2; k >= 1; k--) {
+            const asteroid2 = asteroids[k];
+
+            if (i !== k && circleCollission(asteroid, asteroid2)) {
+                if (asteroid.radius > asteroid2.radius) {
+                    asteroid.radius -= asteroid2.radius*2/3;
+                    asteroids.splice(k, 1);
+                } else {
+                    asteroid2.radius -= asteroid.radius*2/3;
+                    asteroids.splice(i, 1);
                 }
             }
         }
