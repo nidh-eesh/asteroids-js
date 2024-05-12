@@ -10,11 +10,18 @@ class Player {
     constructor({ position, velocity }) {
         this.position = position; // {x, y}
         this.velocity = velocity;
+        this.rotation = 0;
     }
 
     draw() {
         /* ctx.fillStyle = 'red';
         ctx.fillRect(this.position.x, this.position.y, 100, 100) */
+        ctx.save();
+
+        ctx.translate(this.position.x, this.position.y);
+        ctx.rotate(this.rotation);
+        ctx.translate(-this.position.x, -this.position.y);
+        
         ctx.arc(this.position.x, this.position.y, 5, 0, Math.PI * 2, false)
         ctx.fillStyle = 'red';
         ctx.fill();
@@ -27,6 +34,7 @@ class Player {
 
         ctx.strokeStyle = 'white';
         ctx.stroke();
+        ctx.restore();
     }
 
     update() {
@@ -66,6 +74,9 @@ function animate() {
     player.update();
 
     player.velocity.x = keys.w.pressed ? 1 : 0;
+    player.velocity.y = keys.s.pressed ? 1 : 0;
+    player.rotation += keys.d.pressed ? 0.01 : 0;
+    player.rotation -= keys.a.pressed ? 0.01 : 0;
 
 }
 
