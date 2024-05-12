@@ -106,6 +106,13 @@ function animate() {
         const projectile = projectiles[i];
         projectile.update();
 
+        // Garbage collection for projectiles
+        if (projectile.position.x + projectile.radius < 0 ||
+            projectile.position.x - projectile.radius > canvas.width ||
+            projectile.position.y + projectile.radius < 0 ||
+            projectile.position.y - projectile.radius > canvas.height) {
+            projectiles.splice(i, 1);
+        }
     }
 
     player.velocity.x = keys.w.pressed ? Math.cos(player.rotation) * SPEED : player.velocity.x * FRICTION;
