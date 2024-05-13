@@ -44,6 +44,26 @@ class Player {
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
     }
+
+    getVertices() {
+        const cos = Math.cos(this.rotation)
+        const sin = Math.sin(this.rotation)
+
+        return [
+            {
+                x: this.position.x + cos * 30 - sin * 0,
+                y: this.position.y + sin * 30 + cos * 0,
+            },
+            {
+                x: this.position.x + cos * -10 - sin * 10,
+                y: this.position.y + sin * -10 + cos * 10,
+            },
+            {
+                x: this.position.x + cos * -10 - sin * -10,
+                y: this.position.y + sin * -10 + cos * -10,
+            },
+        ]
+    }
 }
 
 class Projectile {
@@ -90,6 +110,52 @@ class Asteroid {
     }
 }
 
+function circleTriangleCollision(circle, triangle) {
+    // Check if the circle is colliding with any of the triangle's edges
+    for (let i = 0; i < 3; i++) {
+        let start = triangle[i]
+        let end = triangle[(i + 1) % 3]
+
+        let dx = end.x - start.x
+        let dy = end.y - start.y
+        let length = Math.sqrt(dx * dx + dy * dy)
+
+        let dot =
+            ((circle.position.x - start.x) * dx +
+                (circle.position.y - start.y) * dy) /
+            Math.pow(length, 2)
+
+        let closestX = start.x + dot * dx
+        let closestY = start.y + dot * dy
+
+        if (!isPointOnLineSegment(closestX, closestY, start, end)) {
+            closestX = closestX < start.x ? start.x : end.x
+            closestY = closestY < start.y ? start.y : end.y
+        }
+
+        dx = closestX - circle.position.x
+        dy = closestY - circle.position.y
+
+        let distance = Math.sqrt(dx * dx + dy * dy)
+
+        if (distance <= circle.radius) {
+            return true
+        }
+    }
+
+    // No collision
+    return false
+}
+
+function isPointOnLineSegment(x, y, start, end) {
+    return (
+        x >= Math.min(start.x, end.x) &&
+        x <= Math.max(start.x, end.x) &&
+        y >= Math.min(start.y, end.y) &&
+        y <= Math.max(start.y, end.y)
+    )
+}
+
 
 const player = new Player({
     position: { x: canvas.width / 2, y: canvas.height / 2 },
@@ -119,7 +185,7 @@ const PROJECTILE_SPEED = 3;
 const projectiles = [];
 const asteroids = [];
 
-setInterval(() => {
+const intervalId = setInterval(() => {
     const index = Math.floor(Math.random() * 2);
     let x, y, vx, vy;
     const radius = 50 * Math.random() + 10;
@@ -170,7 +236,7 @@ function circleCollission(circle1, circle2) {
 }
 
 function animate() {
-    window.requestAnimationFrame(animate);
+    const animationId = window.requestAnimationFrame(animate);
 
     ctx.fillStyle = 'black'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -196,6 +262,13 @@ function animate() {
         const asteroid = asteroids[i];
         asteroid.update();
 
+        if (circleTriangleCollision(asteroid, player.getVertices())) {
+            alert('Game Over');
+            window.cancelAnimationFrame(animationId);
+            clearInterval(intervalId);
+            location.reload()
+        }
+
         // Garbage collection for asteroids
         if (asteroid.position.x + asteroid.radius < 0 ||
             asteroid.position.x - asteroid.radius > canvas.width ||
@@ -203,7 +276,7 @@ function animate() {
             asteroid.position.y - asteroid.radius > canvas.height) {
             asteroids.splice(i, 1);
         }
-        
+
         // Projectile-Asteroid Collision
         for (let j = projectiles.length - 1; j >= 0; j--) {
             const projectile = projectiles[j];
@@ -224,10 +297,10 @@ function animate() {
 
             if (i !== k && circleCollission(asteroid, asteroid2)) {
                 if (asteroid.radius > asteroid2.radius) {
-                    asteroid.radius -= asteroid2.radius*2/3;
+                    asteroid.radius -= asteroid2.radius * 2 / 3;
                     asteroids.splice(k, 1);
                 } else {
-                    asteroid2.radius -= asteroid.radius*2/3;
+                    asteroid2.radius -= asteroid.radius * 2 / 3;
                     asteroids.splice(i, 1);
                 }
             }
